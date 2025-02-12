@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 
 # Pin configuration
-BUTTON_PIN = 18  # Change to your actual button GPIO pin
-LED_PIN = 23     # Change to your actual LED GPIO pin
+BUTTON_PIN = 18  # Change to your actual button GPIO pin. Test kolla här
+LED_PIN = 23     # Change to your actual LED GPIO pin 
 
 # GPIO setup
 GPIO.setmode(GPIO.BCM)
