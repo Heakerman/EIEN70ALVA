@@ -16,11 +16,11 @@ DARK_GRAY = (23, 23, 23)
 ALVIER_GREEN = (38, 208, 124)
 
 #Load logo
-logo = pygame.image.load("alvier_logo_white.png")
+logo = pygame.image.load("Images/alvier_logo_white.png")
 logo = pygame.transform.scale(logo, (200, 90))
 
 #Load gear image
-gear = pygame.image.load("Alvier_Gear.png")
+gear = pygame.image.load("Images/Alvier_Gear.png")
 gear = pygame.transform.scale(gear, (120, 120))
 gear_angle = 0
 
