@@ -1,3 +1,5 @@
+#TEST
+
 import time
 from graphics import Graphics
 
