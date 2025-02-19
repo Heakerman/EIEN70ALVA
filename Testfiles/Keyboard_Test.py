@@ -1,20 +1,20 @@
-import keyboard
+from pynput import keyboard
 
 counter = 0
 
-def on_key_event(event):
+def on_key_event(key):
     global counter
-    if event.name == "num 2":
-        counter += 1
-        print(f"Counter: {counter}")
-    elif event.name == "num 1":
-        counter -= 1
-        print(f"Counter: {counter}")
+    try:
+        if key.char == "2":  # Check for Numpad 2
+            counter += 1
+            print(f"Counter: {counter}")
+        elif key.char == "1":  # Check for Numpad 1
+            counter -= 1
+            print(f"Counter: {counter}")
+    except AttributeError:
+        pass  # Ignore special keys
 
-print("Press Numpad 2 to count up, Numpad 1 to count down. Press Ctrl+C to exit.")
-keyboard.hook(on_key_event)
+print("Press Numpad 2 to count up, Numpad 1 to count down. Press ESC to exit.")
 
-try:
-    keyboard.wait("esc")  # Wait until ESC is pressed to exit
-except KeyboardInterrupt:
-    print("\nExiting...")
+with keyboard.Listener(on_press=on_key_event) as listener:
+    listener.join()
