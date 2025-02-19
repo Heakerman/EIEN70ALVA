@@ -1,20 +1,23 @@
-from pynput import keyboard
+import evdev
+
+# Replace with the correct device path after testing
+DEVICE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd"
+
+device = evdev.InputDevice(DEVICE_PATH)
+print(f"Listening to {device.name}...")
 
 counter = 0
 
-def on_key_event(key):
-    global counter
-    try:
-        if key.char == "2":  # Check for Numpad 2
+for event in device.read_loop():
+    if event.type == evdev.ecodes.EV_KEY and event.value == 1:  # Key press event
+        key = evdev.ecodes.KEY[event.code]
+
+        if key == "KEY_KP2":  # Numpad 2
             counter += 1
             print(f"Counter: {counter}")
-        elif key.char == "1":  # Check for Numpad 1
+        elif key == "KEY_KP1":  # Numpad 1
             counter -= 1
             print(f"Counter: {counter}")
-    except AttributeError:
-        pass  # Ignore special keys
-
-print("Press Numpad 2 to count up, Numpad 1 to count down. Press ESC to exit.")
-
-with keyboard.Listener(on_press=on_key_event) as listener:
-    listener.join()
+        elif key == "KEY_ESC":  # Exit on ESC key
+            print("Exiting...")
+            break
