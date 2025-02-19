@@ -2,8 +2,12 @@ import evdev
 
 # Replace with the correct device path after testing
 DEVICE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd"
+IGNORE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-if01"
 
 device = evdev.InputDevice(DEVICE_PATH)
+ignoredev = evdev.InputDevice(IGNORE_PATH)
+ignoredev.grab()
+
 print(f"Listening to {device.name}...")
 
 counter = 0
@@ -21,3 +25,5 @@ for event in device.read_loop():
         elif key == "KEY_ESC":  # Exit on ESC key
             print("Exiting...")
             break
+
+ignoredev.ungrab()
