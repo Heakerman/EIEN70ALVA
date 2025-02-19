@@ -1,7 +1,7 @@
 #TEST
 
 import time
-from graphics import Graphics
+from Graphics import Graphics
 
 def main():
     graphics = Graphics()
