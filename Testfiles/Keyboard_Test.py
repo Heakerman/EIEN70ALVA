@@ -1,18 +1,18 @@
 import evdev
 
 # Replace with the correct device path after testing
-DEVICE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd"
-IGNORE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-if01"
+DEVICE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-kbd" # Listener device path
+IGNORE_PATH = "/dev/input/by-id/usb-Logitech_USB_Keyboard-event-if01" # Writing device path
 
-device = evdev.InputDevice(DEVICE_PATH)
-ignoredev = evdev.InputDevice(IGNORE_PATH)
-ignoredev.grab()
+device = evdev.InputDevice(DEVICE_PATH) # Keyboard device
+ignoredev = evdev.InputDevice(IGNORE_PATH) # Writing device
+ignoredev.grab() # Grab the writing device
 
-print(f"Listening to {device.name}...")
+print(f"Listening to {device.name}...") 
 
-counter = 0
+counter = 0 
 
-for event in device.read_loop():
+for event in device.read_loop(): # Read events from the device
     if event.type == evdev.ecodes.EV_KEY and event.value == 1:  # Key press event
         key = evdev.ecodes.KEY[event.code]
 
@@ -26,4 +26,4 @@ for event in device.read_loop():
             print("Exiting...")
             break
 
-ignoredev.ungrab()
+ignoredev.ungrab() # Release the writing device
