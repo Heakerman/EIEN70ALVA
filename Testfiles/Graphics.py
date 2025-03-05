@@ -7,7 +7,7 @@ class Graphics(threading.Thread):
         pygame.init()
 
         # Screen Setup
-        self.WIDTH, self.HEIGHT = 1200, 800
+        self.WIDTH, self.HEIGHT = 1920, 720
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Voting system")
@@ -36,9 +36,9 @@ class Graphics(threading.Thread):
         self.answers = ["Red", "Blue", "Green", "Yellow", "Purple"]
 
         # Answer text-boxes
-        self.box_width, self.box_height = 230, 360
-        self.start_x = (self.WIDTH - (self.box_width * len(self.answers) + 20 * (len(self.answers) - 1))) // 2
-        self.start_y = 520
+        self.box_width, self.box_height = (self.WIDTH-220-10*4)//5, self.HEIGHT - 170
+        self.start_x = 110
+        self.start_y = 460
 
         self.running = True
 
@@ -65,14 +65,14 @@ class Graphics(threading.Thread):
 
                 # Background rectangle for buttons
                 rect_x = 100  
-                rect_y = 500
-                rect_width = 1300
-                rect_height = 400
+                rect_y = 450
+                rect_width = self.WIDTH - 200
+                rect_height = self.HEIGHT - 150
                 pygame.draw.rect(self.screen, self.WHITE, (rect_x, rect_y, rect_width, rect_height), border_radius=15)
 
                 # Answer boxes
                 for i, answer in enumerate(self.answers):
-                    box_x = self.start_x + i * (self.box_width + 20)
+                    box_x = self.start_x + i * (self.box_width + 10)
                     box_rect = pygame.Rect(box_x, self.start_y, self.box_width, self.box_height)
                     pygame.draw.rect(self.screen, self.ALVIER_GREEN, box_rect, border_radius=10)
                     text_surface = self.font.render(answer, True, self.WHITE)
