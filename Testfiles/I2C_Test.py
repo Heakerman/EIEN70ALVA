@@ -3,12 +3,12 @@ import time
 from i2c_lcd import I2cLcd  # External library for LCD handling
 
 # Define the I2C addresses of the five displays
-I2C_ADDRESSES = [0x20, 0x21, 0x22, 0x23, 0x24]  # Change these based on jumper settings A0,A1,A2
+I2C_ADDRESSES = [0x27]  # Change these based on jumper settings A0,A1,A2
 
 
 # Create LCD objects for each display
 bus = smbus2.SMBus(1)  # Use I2C bus 1 on the Raspberry Pi. SDA on pin 3, SCL on pin 5, GND on pin 6 and VCC on pin 4
-lcds = [I2cLcd(bus, addr, 4, 20) for addr in I2C_ADDRESSES]  # Now using 4x20 LCDs. lcds is a list of 5 LCD objects
+lcds = [I2cLcd(1, addr, 4, 20) for addr in I2C_ADDRESSES]  # 1 is the I2C bus number  # Now using 4x20 LCDs. lcds is a list of 5 LCD objects
 
 # Function to update all displays
 def update_displays(messages):
@@ -20,7 +20,7 @@ def update_displays(messages):
 
 # Example usage
 messages = [ # List of messages to display on each display
-    ["Option 1:", "Yes", "", ""],
+    ["Option 1:", "Hello world", "  Testar mellanrum", ""],
     ["Option 2:", "No", "", ""],
     ["Option 3:", "Maybe", "", ""],
     ["Option 4:", "Later", "", ""],
