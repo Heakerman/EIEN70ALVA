@@ -2,9 +2,11 @@ import pygame
 import threading
 
 class Graphics(threading.Thread):
-    def __init__(self):
+    def __init__(self, monitor):
         super().__init__()
         pygame.init()
+
+        self.monitor = monitor  # Reference to the Monitor instance
 
         # Screen Setup
         self.WIDTH, self.HEIGHT = 1920, 720
@@ -32,8 +34,8 @@ class Graphics(threading.Thread):
         self.font_q = pygame.font.Font(None, 80)
 
         # Questions and answers
-        self.question_text = "What's your favorite color?"
-        self.answers = ["Red", "Blue", "Green", "Yellow", "Purple"]
+        self.question_text, self.answers = self.monitor.getQandA()
+        self.monitor.reset_update_flag()
 
         # Answer text-boxes
         self.box_width, self.box_height = (self.WIDTH-220-10*4)//5, self.HEIGHT - 170
@@ -46,6 +48,11 @@ class Graphics(threading.Thread):
         while self.running:
             try:
                 self.screen.fill(self.DARK_GRAY)
+
+                if self.monitor.GraphUpdated:
+                    # Update question and answers
+                    self.question_text, self.answers = self.monitor.getQandA()
+                    self.monitor.reset_update_flag()
 
                 # Rotate the gear
                 self.gear_angle -= 1
