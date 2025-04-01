@@ -1,6 +1,8 @@
 import time
 import pygame
+from Monitor import Monitor
 from Graphics import Graphics
+
 
 def handle_events(graphics):
     for event in pygame.event.get():
@@ -11,7 +13,8 @@ def handle_events(graphics):
                 graphics.stop()
 
 def main():
-    graphics = Graphics()
+    monitor = Monitor()  # Initialize the monitor
+    graphics = Graphics(monitor)
     graphics.start()
 
     while graphics.running:
@@ -21,5 +24,5 @@ def main():
     graphics.join()  # Ensure graphics thread stops before quitting
     print("Main thread exiting")
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     main()
