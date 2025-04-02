@@ -1,0 +1,46 @@
+import RPi.GPIO as GPIO
+import time
+import threading
+
+# Pin configuration
+BUTTON_PINS = [18]  # Button pins
+
+
+# GPIO setup
+GPIO.setmode(GPIO.BCM)
+
+def callback(channel):
+        button_index = BUTTON_PINS.index(channel) + 1  # Map button pin to integer (1-5)
+        print(f"Button {button_index} pressed, sending integer {button_index}")
+
+def control_motor(state):
+    GPIO.output(MOTOR_PIN, state)
+    print("Motor ON" if state else "Motor OFF")
+
+def control_led(led_index, state):
+    GPIO.output(LED_PINS[led_index], state)
+    print(f"LED {led_index + 1} {'ON' if state else 'OFF'}")
+
+# Setup button and sensor pins
+for pin in BUTTON_PINS:
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set button pins as input
+    GPIO.add_event_detect(pin, GPIO.FALLING, callback=callback, bouncetime=200)
+
+class GPIOthread(threading.Thread):
+    def __init__(self):
+        super().__init__(daemon=True)
+    
+    def run(self):
+        try:
+            print("GPIO event thread running.")
+            while True:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            GPIO.cleanup()  # Cleanup GPIO on exit
+
+# This function can be called from another main class to start the thread
+def start_gpio_thread():
+    t = GPIOthread()
+    t.start()
+    return t

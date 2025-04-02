@@ -74,43 +74,51 @@ def robot_com_thread(queue):
     global is_processing
     
     while True:
-        # Wait for an integer from the GPIO thread
-        value_to_send = queue.get()  # Block until we get a value from the queue
+        value_to_send = queue.get()  # Wait for an integer from the GPIO thread
         print(f"Sending integer {value_to_send} to the robot...")
-        
-        # Connect to the robot each time before sending a new value
-        connect_to_robot()
-        
+
+        client = connect_to_robot()
+        if client is None:
+            print("Skipping this command due to connection failure.")
+            is_processing = False
+            continue
+
         try:
-            # Define the register where you want to store the integer
-            register_address = 100  # Replace with the appropriate register address on the UR5
-            
-            # Send the integer to the UR5 robot
-            client.write_register(register_address, value_to_send)
-            print(f"Sent integer {value_to_send} to register {register_address} on UR5.")
-            
-            # Wait for acknowledgment from the robot (e.g., read a status register)
-            # Replace 101 with the actual acknowledgment register address
-            response = client.read_holding_registers(101, 1)  # Assuming 101 is the acknowledgment register
-            if response.isError():
-                print("Error reading acknowledgment from robot.")
-            else:
-                ack_value = response.registers[0]  # Get the acknowledgment value
-                if ack_value == 1:  # Assuming '1' means successful acknowledgment
-                    print("Acknowledgment received from the robot.")
-                else:
-                    print("Robot acknowledgment failed.")
+            client.write_register(REGISTER_ADDRESS, value_to_send)
+            print(f"Sent integer {value_to_send} to register {REGISTER_ADDRESS}.")
+
+            # Step 1: Wait for acknowledgment (ACK_REGISTER = 1)
+            print("Waiting for robot acknowledgment...")
+            while True:
+                response = client.read_holding_registers(ACK_REGISTER, 1)
+                if response.isError():
+                    print("Error reading acknowledgment from robot.")
+                    break
+                elif response.registers[0] == 1:
+                    print("Acknowledgment received from the robot!")
+                    break  # Exit loop when ACK_REGISTER is 1
+                time.sleep(0.1)
+
+            # Step 2: Wait for robot to reset ACK_REGISTER to 0 before proceeding
+            print("Waiting for robot to reset ACK_REGISTER to 0...")
+            while True:
+                response = client.read_holding_registers(ACK_REGISTER, 1)
+                if response.isError():
+                    print("Error reading acknowledgment reset.")
+                    break
+                elif response.registers[0] == 0:
+                    print("Robot reset ACK_REGISTER to 0. Ready for next command.")
+                    break  # Exit loop when ACK_REGISTER is 0
+                time.sleep(0.1)
+
         except ModbusIOException as e:
             print(f"Modbus communication error: {e}")
-        
-        # Close the connection after sending the integer and receiving acknowledgment
-        client.close()
-        print(f"Robot communication completed for value {value_to_send}.")
-        
-        # Reset the processing flag to allow new button presses
-        is_processing = False
-        
-        # Sleep or wait for the next value in the queue
+
+        finally:
+            client.close()
+            print(f"Robot communication completed for value {value_to_send}.")
+            is_processing = False  # Allow new button presses
+
         time.sleep(0.1)
 
 class GPIOthread(threading.Thread):

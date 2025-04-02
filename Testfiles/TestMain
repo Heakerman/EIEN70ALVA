@@ -1,0 +1,11 @@
+import time
+from GPIOThreadTest import GPIOthread
+
+def main():
+    # Start the GPIO thread
+    gpio_thread = GPIOthread()
+    gpio_thread.start()
+    print("GPIO thread started")
+
+if __name__ == "__main__":  
+    main()
