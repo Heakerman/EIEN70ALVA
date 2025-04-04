@@ -20,7 +20,7 @@ class QuestionBank:
             {"id": 17, "question": "How do you prefer to commute to work?", "answers": ["Car", "Public transport", "Bicycle", "Walk", "Work from home"]},
             {"id": 18, "question": "Which of these would you most likely invest in?", "answers": ["Stocks", "Real estate", "Cryptocurrency", "Startups", "Bonds"]},
             {"id": 19, "question": "What is your ideal weekend getaway?", "answers": ["Beach", "Mountain", "City tour", "Countryside", "Theme park"]},
-            {"id": 20, "question": "What kind of books do you like to read?", "answers": ["Fiction", "Non-fiction", "Biographies", "Science fiction", "Fantasy"]}
+            {"id": 20, "question": "What kind of books do you like to read during the summer?", "answers": ["I like to read Fiction when it's rainy and other things aswell, such like romans and so on.", "Non-fiction", "Biographies", "Science fiction", "Fantasy"]}
         ]
         self.current_index = 0  # Starts at the first question (index 0, id 1)
 
