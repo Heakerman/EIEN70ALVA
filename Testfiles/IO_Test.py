@@ -1,30 +1,35 @@
 import RPi.GPIO as GPIO
 import time
 
-# Pin configuration
-BUTTON_PIN = 18  # Change to your actual button GPIO pin. Test kolla här
-LED_PIN = 23     # Change to your actual LED GPIO pin 
+BUTTON_PIN = 18  # BCM 18 (physical pin 12)
 
-# GPIO setup
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(LED_PIN, GPIO.OUT)
-GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# Set up GPIO
+GPIO.setmode(GPIO.BCM)  # Set the GPIO mode to BCM
+GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set the button pin as input with pull-up resistor
 
-led_state = False  # Initial LED state
+# This flag controls the main loop
+running = True
 
-def button_callback(channel):
-    global led_state
-    led_state = not led_state  # Toggle state
-    GPIO.output(LED_PIN, led_state)
-    print("LED ON" if led_state else "LED OFF")
+# To track if button has been pressed
+button_was_pressed = False
 
-# Add event detection for button press
-GPIO.add_event_detect(BUTTON_PIN, GPIO.FALLING, callback=button_callback, bouncetime=200)
-
+# Main loop
 try:
-    print("Press the button to toggle the LED.")
-    while True:
-        time.sleep(0.1)  # Small delay to reduce CPU usage
+    print("Waiting for button press... (Ctrl+C to exit)")
+    while running:
+        input_state = GPIO.input(BUTTON_PIN)  # Read the button state
+        
+        if input_state == GPIO.LOW and not button_was_pressed:  # Button pressed and not already processed
+            print("Button was pressed!")
+            button_was_pressed = True  # Set flag to indicate the button press is processed
+        
+        elif input_state == GPIO.HIGH:  # Button not pressed
+            button_was_pressed = False  # Reset the flag when button is released
+        
+        time.sleep(0.05)  # Small delay to reduce CPU usage
+
 except KeyboardInterrupt:
-    print("\nExiting...")
-    GPIO.cleanup()  # Cleanup GPIO on exit
+    print("\nProgram interrupted by user.")
+finally:
+    GPIO.cleanup()  # Clean up the GPIO settings on exit
+    print("GPIO cleaned up and program exited.")
