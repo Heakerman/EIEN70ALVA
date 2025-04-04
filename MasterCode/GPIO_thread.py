@@ -7,7 +7,7 @@ from pymodbus.exceptions import ModbusIOException
 
 # Pin configuration
 BUTTON_PINS = [18, 19, 20, 21, 22]  # Button pins
-LED_PINS = [23, 24, 25, 26, 27]     # LED pins
+LED_PINS = [23, 24, 25, 26, 27]    # LED pins
 SENSOR_PINS = [5, 6]  # Sensor pins
 MOTOR_PIN = 13        # Motor pin
 
@@ -23,31 +23,26 @@ is_processing = False
 # Modbus client setup (without connection)
 client = None
 
+# Modbus registers
+REGISTER_ADDRESS = 0  # Replace with your actual register address
+ACK_REGISTER = 1      # Replace with your actual ACK register address
+
 # Connect to the robot function
 def connect_to_robot():
     global client
     ur5_ip = '192.168.1.100'  # Replace with the UR5's IP address
     ur5_port = 502            # Default Modbus port
     client = ModbusTcpClient(ur5_ip, port=ur5_port)
-    client.connect()
+    try:
+        client.connect()
+        return client
+    except Exception as e:
+        print(f"Error connecting to robot: {e}")
+        return None
 
-def callback(channel):
-    global is_processing
-
-    if channel in BUTTON_PINS:
-        if is_processing:
-            # Ignore new button presses if the robot is still processing
-            print("Robot is still processing, ignoring button press.")
-            return
-        
-        button_index = BUTTON_PINS.index(channel) + 1  # Map button pin to integer (1-5)
-        print(f"Button {button_index} pressed, sending integer {button_index}")
-        queue.put(button_index)  # Put the integer into the queue for robot communication
-        is_processing = True  # Set the processing flag to True
-
-    elif channel in SENSOR_PINS:
-        sensor_index = SENSOR_PINS.index(channel) + 1  # Map sensor pin to integer (1-2)
-        print(f"Sensor {sensor_index} triggered")
+def sensor_callback(channel):
+    sensor_index = SENSOR_PINS.index(channel) + 1  # Map sensor pin to integer (1-2)
+    print(f"Sensor {sensor_index} triggered")
 
 def control_motor(state):
     GPIO.output(MOTOR_PIN, state)
@@ -61,18 +56,60 @@ for pin in LED_PINS:
     GPIO.setup(pin, GPIO.OUT)  # Set LED pins as output
     GPIO.output(pin, False)
 
-# Setup button and sensor pins
-for pin in BUTTON_PINS + SENSOR_PINS:
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set button and sensor pins as input
-    GPIO.add_event_detect(pin, GPIO.FALLING, callback=callback, bouncetime=200)
-
 GPIO.setup(MOTOR_PIN, GPIO.OUT)  # Set motor pin as output
 GPIO.output(MOTOR_PIN, False)
+
+# Setup sensor pins
+for pin in SENSOR_PINS:
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set sensor pins as input
+    GPIO.add_event_detect(pin, GPIO.FALLING, callback=sensor_callback, bouncetime=200)
+
+class ButtonMonitor(threading.Thread):
+    def __init__(self, queue):
+        threading.Thread.__init__(self)
+        self.running = True
+        self.button_was_pressed = [False] * len(BUTTON_PINS)  # Track each button
+        self.queue = queue # store the queue
+
+        for pin in BUTTON_PINS:
+            GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+    def run(self):
+        try:
+            print("Button monitor thread started.")
+            while self.running:
+                for i, pin in enumerate(BUTTON_PINS):
+                    input_state = GPIO.input(pin)
+
+                    if input_state == GPIO.LOW and not self.button_was_pressed[i]:
+                        global is_processing
+                        if is_processing:
+                            print("Robot is still processing, ignoring button press.")
+                            continue
+
+                        print(f"Button {i+1} pressed, sending integer {i+1}")
+                        self.queue.put(i + 1)
+                        self.button_was_pressed[i] = True
+                        is_processing = True
+
+                    elif input_state == GPIO.HIGH:
+                        self.button_was_pressed[i] = False
+
+                time.sleep(0.05)
+
+        except Exception as e:
+            print(f"Error in button monitor thread: {e}")
+
+        finally:
+            GPIO.cleanup()
+            print("Button monitor thread stopped and GPIO cleaned up.")
+
+    def stop(self):
+        self.running = False
 
 # The robot communication thread, which will send the value to the robot
 def robot_com_thread(queue):
     global is_processing
-    
     while True:
         value_to_send = queue.get()  # Wait for an integer from the GPIO thread
         print(f"Sending integer {value_to_send} to the robot...")
@@ -121,30 +158,19 @@ def robot_com_thread(queue):
 
         time.sleep(0.1)
 
-class GPIOthread(threading.Thread):
-    def __init__(self):
-        super().__init__(daemon=True)
-    
-    def run(self):
-        try:
-            print("GPIO event thread running.")
-            while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            GPIO.cleanup()  # Cleanup GPIO on exit
+if __name__ == "__main__":
+    button_thread = ButtonMonitor(queue)
+    button_thread.start()
 
-# Start the threads
-def start_gpio_thread():
-    t_gpio = GPIOthread()
-    t_gpio.start()
-    return t_gpio
+    robot_thread = threading.Thread(target=robot_com_thread, args=(queue,))
+    robot_thread.start()
 
-def start_robot_com_thread():
-    t_robot = threading.Thread(target=robot_com_thread, args=(queue,))
-    t_robot.start()
-    return t_robot
-
-# Start both threads
-start_gpio_thread()
-start_robot_com_thread()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        button_thread.stop()
+        button_thread.join()
+        GPIO.cleanup()
+        print("GPIO cleaned up and program exited.")
