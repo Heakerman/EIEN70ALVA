@@ -9,6 +9,9 @@ class Monitor:
         self.current_answers = self.current_q['answers']
         self.lock = threading.Lock()  # Initialize a lock to synchronize access
         self.GraphUpdated = False  # Flag to indicate if the question and answers have changed
+        self.robotBusy = False  # Flag to indicate if the robot is busy
+        self.robotStatus = -1  # Status of the robot, -1 indicates idle
+        self.robotStatusHasBeenSet = False  # Flag to indicate if the robot status has been set
 
     def nextQandA(self):
         """Updates the current question and answers to the next one."""
@@ -34,3 +37,11 @@ class Monitor:
         """Returns the current answers."""
         with self.lock:
             return self.current_answers
+
+    def try_send_to_robot(self, x):
+        """Attempts to send an integer to the robot."""
+        if not self.robotBusy:
+            with self.lock:
+                self.robotStatus = x
+                self.robotStatusHasBeenSet = True
+                threading.Event().set()  # Notify the ethernet thread that a new status is available
