@@ -29,3 +29,8 @@ class Monitor:
     def reset_update_flag(self):
         """Resets the update flag after the Graphics thread has processed it."""
         self.GraphUpdated = False
+
+    def getA(self):
+        """Returns the current answers."""
+        with self.lock:
+            return self.current_answers
