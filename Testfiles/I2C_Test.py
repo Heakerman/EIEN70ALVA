@@ -3,7 +3,7 @@ import time
 from i2c_lcd import I2cLcd  # External library for LCD handling
 
 # Define the I2C addresses of the five displays
-I2C_ADDRESSES = [0x27]  # Change these based on jumper settings A0,A1,A2
+I2C_ADDRESSES = [0x27,0x24, 0x26,0x25,0x23]  # Change these based on jumper settings A0,A1,A2
 
 
 # Create LCD objects for each display
