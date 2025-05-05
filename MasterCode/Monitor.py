@@ -2,7 +2,7 @@ import threading
 from QuestionBank import QuestionBank
 
 class Monitor:
-    def __init__(self):
+    def __init__(self,condition):
         self.qbank = QuestionBank()  # Initialize the question bank
         self.current_q = self.qbank.get_current_question()
         self.current_question = self.current_q['question']
@@ -12,6 +12,7 @@ class Monitor:
         self.robotBusy = False  # Flag to indicate if the robot is busy
         self.robotInteger = -1  # Integer of the robot, -1 indicates idle
         self.robotIntegerHasBeenSet = False  # Flag to indicate if the robot Integer has been set
+        self.condition = condition
 
     def nextQandA(self):
         """Updates the current question and answers to the next one."""
@@ -45,7 +46,9 @@ class Monitor:
                 self.robotInteger = x
                 self.robotIntegerHasBeenSet = True
                 self.robotBusy = True
-                threading.Event().set()  # Notify the ethernet thread that a new Integer is available
+                
+            with self.condition:
+                self.condition.notify()
 
     def get_robot_Integer(self):
         """Returns the robot Integer to the robot"""

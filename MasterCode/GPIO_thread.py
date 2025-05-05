@@ -1,33 +1,28 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero import Button
 import threading
+import time
 
 
 class GPIO_thread(threading.Thread):
     def __init__(self, monitor):
-        threading.Thread.__init__(self)
-        
-        self.monitor = monitor  # Reference to the Monitor instance
-        self.condition = threading.Condition()
+        super().__init__()
+        self.monitor = monitor
         self.running = True
-        self.button_was_pressed = False
-        
+
         self.BUTTON_PIN = 18  # BCM 18 (physical pin 12)
-        
-        
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        self.button = Button(self.BUTTON_PIN, pull_up=True)
+
+        self.button_was_pressed = False
 
     def run(self):
         try:
             while self.running:
-                input_state = GPIO.input(self.BUTTON_PIN)
-                
-                if input_state == GPIO.LOW and not self.button_was_pressed:
-                    self.monitor.try_send_to_robot(self.BUTTON_PIN)
-                    self.button_was_pressed = True
-                
-                elif input_state == GPIO.HIGH:
+                if self.button.is_pressed and not self.button_was_pressed:
+                        print("button pressed")
+                        self.monitor.try_send_to_robot(2)
+                        self.button_was_pressed = True
+
+                elif not self.button.is_pressed:
                     self.button_was_pressed = False
 
                 time.sleep(0.05)
@@ -36,8 +31,7 @@ class GPIO_thread(threading.Thread):
             print(f"Error in button monitor thread: {e}")
 
         finally:
-            GPIO.cleanup()
-            print("GPIO cleaned up and thread exited.")
+            print("Thread exited cleanly.")
 
     def stop(self):
         self.running = False
