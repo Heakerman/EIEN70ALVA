@@ -3,7 +3,8 @@ import pygame
 import threading
 from Monitor import Monitor
 from Graphics import Graphics
-
+# from Ethernet_Thread import Ethernet_Thread
+# from GPIO_thread import GPIO_thread
 
 def handle_events(graphics, monitor):
     for event in pygame.event.get():
@@ -16,15 +17,27 @@ def handle_events(graphics, monitor):
                 monitor.nextQandA()  # Move to the next question
 
 def main():
-    monitor = Monitor()  # Initialize the monitor
-    graphics = Graphics(monitor)
-    graphics.start()
+    condition = threading.Condition()
+    monitor = Monitor(condition)
+
+    graphics = Graphics(monitor)  # Now runs in main thread
+
+    # Threads for other components
+    # ethernet_thread = Ethernet_Thread(monitor, condition)
+    # gpio_thread = GPIO_thread(monitor)
+
+    # ethernet_thread.start()
+    # gpio_thread.start()
 
     while graphics.running:
-        handle_events(graphics, monitor)  # Handle Pygame events
-        time.sleep(0.01)  # Prevents CPU overload
+        graphics.render()                # Drawing + LCD
+        handle_events(graphics, monitor)  # Event handling
+        time.sleep(0.01)                 # Light sleep to reduce CPU load
 
-    graphics.join()  # Ensure graphics thread stops before quitting
+    # Wait for threads to finish
+    # ethernet_thread.join()
+    # gpio_thread.join()
+
     print("Main thread exiting")
 
 if __name__ == "__main__":

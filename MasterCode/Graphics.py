@@ -1,9 +1,4 @@
 import pygame
-import threading
-import textwrap  # Importera textwrap för att bryta långa svar i flera rader
-import smbus2
-import time
-from i2c_lcd import I2cLcd  # External library for LCD handling
 import textwrap
 import smbus2
 from i2c_lcd import I2cLcd
@@ -41,16 +36,6 @@ class Graphics:
         self.start_x = 110
         self.start_y = 460
 
-        #I2C inställningar
-        # Define the I2C addresses of the five displays
-        self.I2C_ADDRESSES = [0x27,0x24, 0x26,0x25,0x23]  # Change these based on jumper settings A0,A1,A2
-
-        # Create LCD objects for each display
-        self.bus = smbus2.SMBus(1)  # Use I2C bus 1 on the Raspberry Pi. SDA on pin 3, SCL on pin 5, GND on pin 6 and VCC on pin 4
-        self.lcds = [I2cLcd(1, addr, 4, 20) for addr in self.I2C_ADDRESSES]  # 1 is the I2C bus number  # Now using 4x20 LCDs. lcds is a list of 5 LCD objects
-
-
-
         # I2C LCD setup
         self.I2C_ADDRESSES = [0x27, 0x24, 0x26, 0x25, 0x23]
         self.bus = smbus2.SMBus(1)
@@ -73,24 +58,6 @@ class Graphics:
             wrapped_lines.append(current_line)
         return wrapped_lines
 
-    # Function to update all displays
-    def update_displays(self,messages):
-        for i, lcd in enumerate(self.lcds): # Enumerate is used to get the index of the current display
-            lcd.clear() # Clear the display
-            for row in range(4): # Loop through the rows of the display
-                lcd.move_to(0, row) # Move to the start of the row
-                lcd.putstr(messages[i]) # Write the message to the display
-
-    def run(self):
-        while self.running:
-            try:
-                self.screen.fill(self.DARK_GRAY)
-
-                if self.monitor.GraphUpdated:
-                    # Uppdatera fråga och svar
-                    self.question_text, self.answers = self.monitor.getQandA()
-                    self.update_displays(self.answers)  # Skicka svaren till LCD-skärmarna
-                    self.monitor.reset_update_flag()
     def update_displays(self, messages):
         for i, lcd in enumerate(self.lcds):
             lcd.clear()
