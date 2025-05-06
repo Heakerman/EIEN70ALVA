@@ -3,7 +3,6 @@ import pygame
 from Monitor import Monitor
 from Graphics import Graphics
 
-
 def handle_events(graphics, monitor):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -12,19 +11,17 @@ def handle_events(graphics, monitor):
             if event.key == pygame.K_ESCAPE or event.key == pygame.K_0:
                 graphics.stop()
             elif event.key == pygame.K_RIGHT:
-                monitor.nextQandA()  # Move to the next question
+                monitor.nextQandA()
 
 def main():
-    monitor = Monitor()  # Initialize the monitor
+    monitor = Monitor()
     graphics = Graphics(monitor)
-    graphics.start()
 
     while graphics.running:
-        handle_events(graphics, monitor)  # Handle Pygame events
-        time.sleep(0.01)  # Prevents CPU overload
+        graphics.render()  # Draw the current frame
+        handle_events(graphics, monitor)
 
-    graphics.join()  # Ensure graphics thread stops before quitting
     print("Main thread exiting")
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     main()
