@@ -37,13 +37,15 @@ class Ethernet_Thread(threading.Thread):
                     time.sleep(0.1)  # Sleep for a short duration to allow the robot to process the integer
                         
                     self.client.write_register(self.input_register_address, 0)  # Reset the integer to 0
-
+                    time.sleep(1)
                     while(self.robotAcknowledgement == 0):
-                        self.robotAcknowledgement = self.client.read_holding_registers(self.output_register_address)  # Read the output register to check if the robot has acknowledged the integer
-                        time.sleep(4)  # Sleep for a short duration to avoid busy waiting
+                        request = self.client.read_holding_registers(self.output_register_address)  # Read the output register to check if the robot has acknowledged the integer
+                        self.robotAcknowledgement = request.registers[0]
+                        time.sleep(1)  # Sleep for a short duration to avoid busy waiting
 
                     while(self.robotAcknowledgement == 1):
-                        self.robotAcknowledgement = self.client.read_holding_registers(self.output_register_address)
+                        request = self.client.read_holding_registers(self.output_register_address)  # Read the output register to check if the robot has acknowledged the integer
+                        self.robotAcknowledgement = request.registers[0]
                         time.sleep(1)  # Sleep for a short duration to avoid busy waiting
 
                     self.monitor.robot_acknowledge()  # Acknowledge that the robot has received the integer

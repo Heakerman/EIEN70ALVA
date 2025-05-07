@@ -49,6 +49,8 @@ class Monitor:
                 
             with self.condition:
                 self.condition.notify()
+        else:
+            print("Busy")
 
     def get_robot_Integer(self):
         """Returns the robot Integer to the robot"""
