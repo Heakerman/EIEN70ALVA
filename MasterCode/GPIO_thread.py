@@ -1,7 +1,5 @@
 from gpiozero import Button
 import threading
-import time
-
 
 class GPIO_thread(threading.Thread):
     def __init__(self, monitor):
@@ -9,29 +7,30 @@ class GPIO_thread(threading.Thread):
         self.monitor = monitor
         self.running = True
 
-        self.BUTTON_PIN = 18  # BCM 18 (physical pin 12)
-        self.button = Button(self.BUTTON_PIN, pull_up=True)
+        # Define GPIO pins for the 5 buttons
+        self.BUTTON_PINS = [17, 18, 27, 22, 23]
+        self.buttons = []
 
-        self.button_was_pressed = False
+        for i, pin in enumerate(self.BUTTON_PINS):
+            button = Button(pin, bounce_time=0.1, pull_up=True)
+            button.when_pressed = self.make_button_handler(i)
+            self.buttons.append(button)
+
+    def make_button_handler(self, button_index):
+        def handler():
+            print(f"Button {button_index + 1} pressed")
+            self.monitor.try_send_to_robot(button_index + 1)
+        return handler
 
     def run(self):
         try:
+            # Just keep the thread alive while events handle button presses
             while self.running:
-                if self.button.is_pressed and not self.button_was_pressed:
-                        print("button pressed")
-                        self.monitor.try_send_to_robot(2)
-                        self.button_was_pressed = True
-
-                elif not self.button.is_pressed:
-                    self.button_was_pressed = False
-
-                time.sleep(0.05)
-
+                pass
         except Exception as e:
-            print(f"Error in button monitor thread: {e}")
-
+            print(f"Error in GPIO thread: {e}")
         finally:
-            print("Thread exited cleanly.")
+            print("GPIO thread exited cleanly.")
 
     def stop(self):
         self.running = False

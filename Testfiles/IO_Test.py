@@ -1,35 +1,22 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero import Button
+from signal import pause
 
-BUTTON_PIN = 18  # BCM 18 (physical pin 12)
+# Set up 5 buttons on GPIO pins 17, 18, 27, 22, 23
+buttons = [
+    Button(17, bounce_time=0.1),
+    Button(18, bounce_time=0.1),
+    Button(27, bounce_time=0.1),
+    Button(22, bounce_time=0.1),
+    Button(23, bounce_time=0.1)
+]
 
-# Set up GPIO
-GPIO.setmode(GPIO.BCM)  # Set the GPIO mode to BCM
-GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Set the button pin as input with pull-up resistor
+def make_say_hi(n):
+    def say_hi():
+        print(f"HI from button {n}")
+    return say_hi
 
-# This flag controls the main loop
-running = True
+# Attach handlers to each button
+for i, button in enumerate(buttons):
+    button.when_pressed = make_say_hi(i + 1)
 
-# To track if button has been pressed
-button_was_pressed = False
-
-# Main loop
-try:
-    print("Waiting for button press... (Ctrl+C to exit)")
-    while running:
-        input_state = GPIO.input(BUTTON_PIN)  # Read the button state
-        
-        if input_state == GPIO.LOW and not button_was_pressed:  # Button pressed and not already processed
-            print("Button was pressed!")
-            button_was_pressed = True  # Set flag to indicate the button press is processed
-        
-        elif input_state == GPIO.HIGH:  # Button not pressed
-            button_was_pressed = False  # Reset the flag when button is released
-        
-        time.sleep(0.05)  # Small delay to reduce CPU usage
-
-except KeyboardInterrupt:
-    print("\nProgram interrupted by user.")
-finally:
-    GPIO.cleanup()  # Clean up the GPIO settings on exit
-    print("GPIO cleaned up and program exited.")
+pause()
