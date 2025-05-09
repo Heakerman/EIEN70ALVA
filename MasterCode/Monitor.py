@@ -13,6 +13,7 @@ class Monitor:
         self.robotInteger = -1  # Integer of the robot, -1 indicates idle
         self.robotIntegerHasBeenSet = False  # Flag to indicate if the robot Integer has been set
         self.condition = condition
+        self.bucketSensor = False  # Flag to indicate if the bucket sensor is triggered
 
     def nextQandA(self):
         """Updates the current question and answers to the next one."""
@@ -67,3 +68,12 @@ class Monitor:
             self.robotIntegerHasBeenSet = False
             self.robotBusy = False
         
+    def set_bucketSensor(self, value):
+        """Sets the bucket sensor flag."""
+        with self.lock:
+            self.bucketSensor = value
+
+    def get_bucketSensor(self):
+        """Returns the bucket sensor flag."""
+        with self.lock:
+            return self.bucketSensor
