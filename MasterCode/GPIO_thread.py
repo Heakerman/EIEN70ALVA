@@ -37,6 +37,13 @@ class GPIO_thread(threading.Thread):
             button.when_pressed = self.make_button_handler(i)
             self.buttons.append(button)
 
+        # Stepper pins
+        self.step_pin = DigitalOutputDevice(20)   # STEP
+        self.dir_pin = DigitalOutputDevice(26)    # DIR (change if needed)
+
+        self.stepper_running = False
+        self.stepper_thread = None
+
     # Button press handler generator
     def make_button_handler(self, button_index):
         def handler():
@@ -83,6 +90,29 @@ class GPIO_thread(threading.Thread):
     def clawMotor_release(self):
         print("Claw motor releasing")
         self.clawMotor.off()
+
+    def start_stepper(self):
+        if self.stepper_thread is None or not self.stepper_thread.is_alive():
+            print("Starting stepper motor thread")
+            self.stepper_running = True
+            self.stepper_thread = threading.Thread(target=self.stepper_loop)
+            self.stepper_thread.start()
+
+    def stop_stepper(self):
+        print("Stopping stepper motor")
+        self.stepper_running = False
+        if self.stepper_thread:
+            self.stepper_thread.join()
+            self.stepper_thread = None
+
+    def stepper_loop(self):
+        self.dir_pin.on()  # Or .off(), depending on desired direction
+        while self.stepper_running:
+            self.step_pin.on()
+            time.sleep(0.002)
+            self.step_pin.off()
+            time.sleep(0.002)
+
 
     def error(self):
         #Blinks all leds 5 times
