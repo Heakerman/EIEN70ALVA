@@ -1,9 +1,10 @@
 import time
 from pymodbus.client import ModbusTcpClient
+from GPIO_thread import GPIO_thread
 import threading
 
 class Ethernet_Thread(threading.Thread):
-    def __init__(self, monitor, condition):
+    def __init__(self, monitor, condition, gpio_thread):
         super().__init__()
         # Define Modbus TCP client and connection details
         ur5_ip = '172.20.10.150'  # UR5's Modbus IP
@@ -17,6 +18,7 @@ class Ethernet_Thread(threading.Thread):
         self.monitor = monitor  # Reference to the Monitor instance
         self.IntToSend = 0  # Integer to send to the robot
 
+        self.gpio_thread = gpio_thread  # Reference to the GPIO thread
         self.running = True
         self.robotAcknowledgement = 0  # Flag to indicate if the robot has acknowledged the integer
 

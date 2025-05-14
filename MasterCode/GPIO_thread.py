@@ -1,4 +1,4 @@
-from gpiozero import Button, DigitalInputDevice, DigitalOutputDevice
+from gpiozero import Button, DigitalInputDevice, DigitalOutputDevice, LED
 import threading
 import time
 
@@ -11,6 +11,13 @@ class GPIO_thread(threading.Thread):
         # Define GPIO pins for the 5 buttons
         self.BUTTON_PINS = [17, 18, 27, 22, 23]
         self.buttons = []
+
+        # Define GPIO pins for the LEDs
+        self.LED_PINS = [24, 25, 8, 7, 12]
+        self.leds = [LED(pin) for pin in self.LED_PINS]
+
+        for led in self.leds:
+            led.on()  # Turn on all LEDs initially
 
         # Define GPIO for sensors and motors
         self.elevatorSensor = DigitalInputDevice(5)
@@ -35,6 +42,18 @@ class GPIO_thread(threading.Thread):
         def handler():
             print(f"Button {button_index + 1} pressed")
             self.monitor.try_send_to_robot(button_index + 1)
+
+            # Turn off all leds but the one corresponding to the button pressed
+            for j, led in enumerate(self.leds):
+                if j == button_index:
+                    led.on()
+                else:
+                    led.off()
+            
+            time.sleep(1)  # Keep the LED on for 1 second
+            for led in self.leds:
+                led.on()
+
         return handler
 
     # Elevator sensor event handlers
@@ -55,14 +74,28 @@ class GPIO_thread(threading.Thread):
         print("Bucket sensor LOW")
         self.monitor.set_bucketSensor(False)
 
-    # External method to control the claw motor
-    def setClawMotor(self, value):
-        if value == 1:
-            self.clawMotor.on()
-        elif value == 0:
-            self.clawMotor.off()
-        else:
-            print("Invalid value for claw motor. Use 1 to turn on and 0 to turn off.")
+    # External method grab or release the claw motor
+    def clawMotor_grab(self):
+        print("Claw motor grabbing")
+        self.clawMotor.on()
+
+
+    def clawMotor_release(self):
+        print("Claw motor releasing")
+        self.clawMotor.off()
+
+    def error(self):
+        #Blinks all leds 5 times
+        print("Error: Bucket sensor triggered")
+        for _ in range(5):
+            for led in self.leds:
+                led.on()
+            time.sleep(0.5)
+            for led in self.leds:
+                led.off()
+            time.sleep(0.5)
+
+        
 
     # Thread run loop
     def run(self):
