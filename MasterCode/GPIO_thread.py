@@ -40,6 +40,8 @@ class GPIO_thread(threading.Thread):
         # Stepper pins
         self.step_pin = DigitalOutputDevice(20)   # STEP
         self.dir_pin = DigitalOutputDevice(26)    # DIR (change if needed)
+        self.enable_pin = DigitalOutputDevice(21) # ENABLE (change if needed)
+        self.enable_pin.on()
 
         self.stepper_running = False
         self.stepper_thread = None
@@ -95,12 +97,14 @@ class GPIO_thread(threading.Thread):
         if self.stepper_thread is None or not self.stepper_thread.is_alive():
             print("Starting stepper motor thread")
             self.stepper_running = True
+            self.enable_pin.off()
             self.stepper_thread = threading.Thread(target=self.stepper_loop)
             self.stepper_thread.start()
 
     def stop_stepper(self):
         print("Stopping stepper motor")
         self.stepper_running = False
+        self.enable_pin.on()
         if self.stepper_thread:
             self.stepper_thread.join()
             self.stepper_thread = None
