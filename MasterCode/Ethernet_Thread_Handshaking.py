@@ -32,25 +32,28 @@ class Ethernet_Thread(threading.Thread):
             if self.client.connect():
                 self.IntToSend = self.monitor.get_robot_Integer()  # Get the robot integer from the monitor
                 
-                if self.IntToSend > 0 and self.IntToSend < 6: 
-                    
+                if self.IntToSend > 0 and self.IntToSend < 5: 
+                    print("sent integer")
                     self.send_andWait(self.IntToSend)  # Send the integer to the robot
-
-                    self.gpio_thread.clawMotor_grab()
-                    time.sleep(3)  # Wait for 3 seconds before releasing the claw motor
-
-                    self.send_andWait(6)  # Send the integer to the robot
                     
-                    time.sleep(3)
+                    
+                    print("Grabbing")
+                    self.gpio_thread.clawMotor_grab()
+                    
+                    print("Sending 6")
+                    self.send_andWait(6)  # Send the integer to the robot
 
-                    if not self.monitor.get_bucketSensor(): # Check if the bucket sensor is not triggered
-                        self.gpio_thread.error() # Call the error method in the GPIO thread
-
+                    #if not self.monitor.get_bucketSensor(): # Check if the bucket sensor is not triggered
+                        #self.gpio_thread.error() # Call the error method in the GPIO thread
+                    
+                    print("Releasing")
                     self.gpio_thread.clawMotor_release()
-
+                    
+                    print("sending 7")
                     self.send_andWait(7)
-
+            
                     self.monitor.robot_acknowledge()
+                    print("Has acknowledged")
                     self.IntToSend = -1
 
 
@@ -68,17 +71,19 @@ class Ethernet_Thread(threading.Thread):
         self.client.write_register(self.input_register_address, x)
         time.sleep(0.1)  # Sleep for a short duration to allow the robot to process the integer
         self.client.write_register(self.input_register_address, 0)
-        time.sleep(1)
+        time.sleep(0.2)
 
         while(self.received == 0):
             request = self.client.read_holding_registers(self.output_register_address)  # Read the output register to check if the robot has acknowledged the integer
             self.received = request.registers[0]
-            time.sleep(1)  # Sleep for a short duration to avoid busy waiting
+            time.sleep(0.2)  # Sleep for a short duration to avoid busy waiting
 
         while(self.received == 1):
             request = self.client.read_holding_registers(self.output_register_address)  # Read the output register to check if the robot has acknowledged the integer
             self.received = request.registers[0]
-            time.sleep(1)  # Sleep for a short duration to avoid busy waiting
+            time.sleep(0.2)  # Sleep for a short duration to avoid busy waiting
+            
+        print("received acknowledge from robot")
 
     def stop(self):
         if self.running:

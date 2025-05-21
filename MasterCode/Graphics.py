@@ -9,7 +9,7 @@ class Graphics:
         self.monitor = monitor
 
         self.WIDTH, self.HEIGHT = 1920, 720
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))#, pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Voting system")
 
@@ -61,9 +61,11 @@ class Graphics:
     def update_displays(self, messages):
         for i, lcd in enumerate(self.lcds):
             lcd.clear()
-            for row in range(4):
-                lcd.move_to(0, row)
-                lcd.putstr(messages[i])
+            text = messages[i][:20]  # Trim text if it's longer than 20 chars
+            padding = (20 - len(text)) // 2
+            lcd.move_to(padding, 1)
+            lcd.putstr(text)
+
 
     def render(self):
         if self.monitor.GraphUpdated:

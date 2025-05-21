@@ -3,7 +3,8 @@ import pygame
 import threading
 from Monitor import Monitor
 from Graphics import Graphics
-from Ethernet_Thread import Ethernet_Thread
+#from Ethernet_Thread import Ethernet_Thread
+from Ethernet_Thread_Handshaking import Ethernet_Thread
 from GPIO_thread import GPIO_thread
 
 def handle_events(graphics, monitor, gpio_thread, ethernet_thread):

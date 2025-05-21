@@ -9,27 +9,26 @@ class GPIO_thread(threading.Thread):
         self.running = True
 
         # Define GPIO pins for the 5 buttons
-        self.BUTTON_PINS = [17, 18, 27, 22, 23]
+        self.BUTTON_PINS = [17, 27, 22, 23, 24]
         self.buttons = []
 
         # Define GPIO pins for the LEDs
-        self.LED_PINS = [24, 25, 8, 7, 12]
+        self.LED_PINS = [25, 9, 8, 11, 10]
         self.leds = [LED(pin) for pin in self.LED_PINS]
 
         for led in self.leds:
             led.on()  # Turn on all LEDs initially
 
         # Define GPIO for sensors and motors
-        self.elevatorSensor = DigitalInputDevice(5)
+        self.elevatorSensor = DigitalInputDevice(1)
         self.bucketSensor = DigitalInputDevice(6)
-        self.elevatorMotor = DigitalOutputDevice(13)
-        self.clawMotor = Servo(13)
+        self.clawMotor = Servo(5)
 
         # Assign sensor callbacks
-        self.elevatorSensor.when_activated = self.elevatorSensor_High
-        self.elevatorSensor.when_deactivated = self.elevatorSensor_Low
-        self.bucketSensor.when_activated = self.bucketSensor_High
-        self.bucketSensor.when_deactivated = self.bucketSensor_Low
+        #self.elevatorSensor.when_activated = self.elevatorSensor_High
+        #self.elevatorSensor.when_deactivated = self.elevatorSensor_Low
+        #self.bucketSensor.when_activated = self.bucketSensor_High
+        #self.bucketSensor.when_deactivated = self.bucketSensor_Low
 
         # Set up buttons with handlers
         for i, pin in enumerate(self.BUTTON_PINS):
@@ -67,12 +66,12 @@ class GPIO_thread(threading.Thread):
 
     # Elevator sensor event handlers
     def elevatorSensor_High(self):
-        print("Elevator sensor HIGH – turning motor ON")
-        self.elevatorMotor.on()
+        print("Elevator sensor HIGH â turning motor ON")
+        self.start_stepper()
 
     def elevatorSensor_Low(self):
-        print("Elevator sensor LOW – turning motor OFF")
-        self.elevatorMotor.off()
+        print("Elevator sensor LOW â turning motor OFF")
+        self.stop_stepper()
 
     # Bucket sensor event handlers
     def bucketSensor_High(self):
@@ -83,16 +82,22 @@ class GPIO_thread(threading.Thread):
         print("Bucket sensor LOW")
         self.monitor.set_bucketSensor(False)
 
+
+
+
     # External method grab or release the claw motor
     def clawMotor_grab(self):
         print("Claw motor grabbing")
-        self.clawMotor.value = 0.4
-        time.sleep(1)
+        self.clawMotor.value = 1
+        time.sleep(0.15)
+        self.clawMotor.detach()
+
 
     def clawMotor_release(self):
         print("Claw motor releasing")
-        self.clawMotor.value = 0.2
-        time.sleep(1)
+        self.clawMotor.value = -1
+        time.sleep(0.2)
+        self.clawMotor.detach()
 
     def start_stepper(self):
         if self.stepper_thread is None or not self.stepper_thread.is_alive():
@@ -114,9 +119,9 @@ class GPIO_thread(threading.Thread):
         self.dir_pin.on()  # Or .off(), depending on desired direction
         while self.stepper_running:
             self.step_pin.on()
-            time.sleep(0.002)
+            time.sleep(0.01)
             self.step_pin.off()
-            time.sleep(0.002)
+            time.sleep(0.01)
 
 
     def error(self):
