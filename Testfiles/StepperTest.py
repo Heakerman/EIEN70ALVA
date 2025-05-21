@@ -4,6 +4,7 @@ from time import sleep, time
 # Setup pins
 DIR = DigitalOutputDevice(27)   # GPIO27 for direction
 STEP = DigitalOutputDevice(17)  # GPIO17 for step
+ENABLE = DigitalOutputDevice(20)
 
 # Wake up the driver (SLP and RST must be wired HIGH externally or tied together to 3.3V)
 DIR.on()  # or DIR.off() depending on direction

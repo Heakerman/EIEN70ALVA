@@ -1,4 +1,4 @@
-from gpiozero import Button, DigitalInputDevice, DigitalOutputDevice, LED
+from gpiozero import Button, DigitalInputDevice, DigitalOutputDevice, LED, Servo
 import threading
 import time
 
@@ -23,7 +23,7 @@ class GPIO_thread(threading.Thread):
         self.elevatorSensor = DigitalInputDevice(5)
         self.bucketSensor = DigitalInputDevice(6)
         self.elevatorMotor = DigitalOutputDevice(13)
-        self.clawMotor = DigitalOutputDevice(19)
+        self.clawMotor = Servo(13)
 
         # Assign sensor callbacks
         self.elevatorSensor.when_activated = self.elevatorSensor_High
@@ -86,12 +86,13 @@ class GPIO_thread(threading.Thread):
     # External method grab or release the claw motor
     def clawMotor_grab(self):
         print("Claw motor grabbing")
-        self.clawMotor.on()
-
+        self.clawMotor.value = 0.4
+        time.sleep(1)
 
     def clawMotor_release(self):
         print("Claw motor releasing")
-        self.clawMotor.off()
+        self.clawMotor.value = 0.2
+        time.sleep(1)
 
     def start_stepper(self):
         if self.stepper_thread is None or not self.stepper_thread.is_alive():

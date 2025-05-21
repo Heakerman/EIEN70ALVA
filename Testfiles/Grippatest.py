@@ -1,5 +1,6 @@
 from gpiozero import Servo
 from time import sleep
+from servo import Servo
 
 # Initialize the servo on GPIO17
 # Adjust min_pulse_width and max_pulse_width if needed to match your servo's range
