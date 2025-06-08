@@ -1,3 +1,6 @@
+#This code was not used in the final version of the script, but it was used to test the keyboard input.
+
+
 import evdev
 
 # Replace with the correct device path after testing

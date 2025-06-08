@@ -16,9 +16,9 @@ def play_audio(file_path): # Function to play audio file
 
 if __name__ == "__main__": # Main function
     audio_files = { # Dictionary of audio files
-        "sound1": "Audio/cow.mp3",
-        "sound2": "Audio/oof.mp3",
-        "sound3": "Audio/villager.mp3"
+        "sound1": "Audio/Sound1.mp3",
+        "sound2": "Audio/Sound2.mp3",
+        "sound3": "Audio/Sound3.mp3"
     }
     
     sound_choice = input("Enter sound name to play (sound1, sound2, sound3): ") 

@@ -36,19 +36,3 @@ class ButtonMonitor(threading.Thread):
 
     def stop(self):
         self.running = False
-
-# Example usage from another python program:
-#if __name__ == "__main__":
-#    button_thread = ButtonMonitor()
-#    button_thread.start()
-
-#    try:
-#        # Simulate other tasks in the main program
-#        while True:
-#            print("Main program running...")
-#            time.sleep(2)
-#    except KeyboardInterrupt:
-#        print("\nProgram interrupted by user.")
-#        button_thread.stop()
-#        button_thread.join()
-#        print("Main program exited.")
